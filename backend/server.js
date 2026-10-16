@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 // MIDDLEWARE
 // ============================================================
 app.use(cors({
-    origin: 'https://meet-verify-team.netlify.app',
+    origin: 'https://sso-ko-verify.netlify.app',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
